@@ -8,11 +8,15 @@ import { hranol, plech, kruh, teleso, housenka, slouc, vHranolu, maticeGeo, V } 
 import { $, cipy, segment, posuvnik, nf, pamet, zOdkazu, ulozOdkaz, cenik } from './render/ui.js';
 import { dynPanel } from './zabradli-dyn.js';
 
-const Zb = window.Zabradli, KOREN = new URL('../', import.meta.url).href, VERZE = '20261014n';
+const Zb = window.Zabradli, KOREN = new URL('../', import.meta.url).href, VERZE = '20261110a';
 const sdil = zOdkazu();
-let cfg = Zb.normalize((sdil && sdil.c) || pamet.cti('zabradli-cfg') || { vypln: 'laser', rada: 'priroda', motiv: 'jelen', sloupky: true, anchor: 'patka', fin: 'prasek', segs: [{ L: 3000, rise: 0 }] });
+/* cfgVer = konfigurace ze stránky zákazníka: platí pro ni nové meze jádra (přesah nahoru, rozteč motivů) */
+let cfg = Zb.normalize(Object.assign({}, (sdil && sdil.c) || pamet.cti('zabradli-cfg') || { vypln: 'laser', rada: 'priroda', motiv: 'jelen', sloupky: true, anchor: 'patka', fin: 'prasek', segs: [{ L: 3000, rise: 0 }] }, { cfgVer: Zb.CFG_VER }));
 const ui = Object.assign({ prostredi: 'zahrada', koty: false, dof: false, svary: true, ral: null, dilna: false, ksel: null }, pamet.cti('foto-zabradli-ui') || {}, (sdil && sdil.u) || {});
 let rates = Zb.rates0 ? Zb.rates0() : undefined, A = null;
+/* odstín RAL je v konfiguraci (cfg.ral / cfg.ralJiny) stejně jako na zabradli.html; ui.ral je jen barva náhledu */
+const ralKod = () => (window.Ral ? window.Ral.code(cfg.ral, cfg.ralJiny) : '7016');
+const ralDoCfg = (r) => (window.Ral && window.Ral.LIST.some((x) => x.id === String(r)) ? { ral: String(r), ralJiny: '' } : { ral: 'jiny', ralJiny: String(r) });
 
 /* ---------- motivy: stahují se až na vyžádání ---------- */
 const stahuje = {};
@@ -39,6 +43,7 @@ function uloz() { pamet.zapis('zabradli-cfg', cfg); pamet.zapis('foto-zabradli-u
 
 function start() {
   const { studio, mat } = X;
+  if (!ui.ral && mat.RAL[ralKod()] && ralKod() !== '7016') ui.ral = Number(ralKod());   // odstín uložený na zabradli.html
   const M = { ocel: mat.kov(cfg.fin, ui.ral), hrana: mat.hrana(cfg.fin, ui.ral), svar: mat.svar(cfg.fin, ui.ral), kotva: mat.kov(cfg.fin, ui.ral), madlo: mat.drevo('madlo'), spoj: mat.spojovaci(),
     beton: mat.stavba('beton'), omitka: mat.stavba('omitka'), podlozka: new THREE.MeshStandardMaterial({ color: '#5c5248', roughness: 0.9 }) };
   const tech = { ocel: new THREE.MeshStandardMaterial({ color: '#9aa3ab', roughness: 0.8, metalness: 0.1 }), svar: new THREE.MeshBasicMaterial({ color: '#e0541c' }), panel: new THREE.MeshStandardMaterial({ color: '#c7ccd1', roughness: 0.8 }) };
@@ -121,8 +126,11 @@ function start() {
   function panel() {
     cipy($('s0'), Zb.PRESETS.map((p) => ({ id: p.id, lab: p.lab, svg: p.icon })), tvarId(), (id) => { const p = Zb.PRESETS.find((q) => q.id === id); zmen({ segs: p.segs.map((s) => Object.assign({}, s)), stavba: null, pole: [], kotvyPos: null }, true, true); });
     $('x0').innerHTML = '<div id="dTvar"></div>'; $('x2').innerHTML = '<div id="dProfil"></div>';
-    $('s1').innerHTML = '<div id="pV"></div><div id="pP"></div>';
-    pos = { vyska: posuvnik($('pV'), { lab: 'Výška zábradlí', min: 900, max: 1200, step: 10, value: cfg.vyska }, (v) => zmen({ vyska: v })) };
+    const minV = Zb.minHeight(cfg.hloubka, rates || Zb.rates0());
+    $('s1').innerHTML = '<p class="pozn" style="margin:0 0 6px">Kde zábradlí bude</p><div id="pU"></div><p class="pozn" style="margin:12px 0 6px">Hloubka volného prostoru pod zábradlím</p><div id="pH"></div><div id="pV" style="margin-top:12px"></div><p class="pozn">Nejmenší výška pro tuto hloubku je ' + nf(minV) + ' mm (orientační posouzení).</p><div id="pP"></div>';
+    cipy($('pU'), Zb.UZITI.map((u) => ({ id: u.id, lab: u.lab, sub: u.sub })), cfg.uziti, (id) => zmen({ uziti: id, kotvyPos: null }, true));
+    segment($('pH'), Zb.HLOUBKA.map((h) => ({ id: h.id, lab: h.lab })), cfg.hloubka, (id) => zmen({ hloubka: id, vyska: Math.max(cfg.vyska, Zb.minHeight(id, rates || Zb.rates0())) }, true));
+    pos = { vyska: posuvnik($('pV'), { lab: 'Výška zábradlí', min: 900, max: 1300, step: 10, value: cfg.vyska }, (v) => zmen({ vyska: v })) };
     if (cfg.sloupky && cfg.vypln !== 'geometricky') pos.postPitch = posuvnik($('pP'), { lab: 'Rozteč sloupků (nejvýš)', min: cfg.vypln === 'laser' ? Zb.PANEL.postMin : Zb.POST_MIN, max: cfg.vypln === 'laser' ? Zb.PANEL.postMax : Zb.POST_MAX, step: 50, value: cfg.postPitch }, (v) => zmen({ postPitch: v, kotvyPos: null }));
     $('x1').innerHTML = '<p class="pozn">Délky úseků, schodiště a zatáčení nastavíte v kroku Tvar a úseky.</p>';
     cipy($('s2'), [{ id: 'A', lab: 'Špruše', sub: 'se sloupky', svg: Zb.TYPES[0].icon }, { id: 'B', lab: 'Špruše', sub: 'bez sloupků', svg: Zb.TYPES[1].icon }, { id: 'L', lab: 'Motiv', sub: 'stromy, buňky' }, { id: 'P', lab: 'Příroda', sub: 'zvířata, les' }], vypln(), (id) => {
@@ -141,9 +149,10 @@ function start() {
     $('s4').innerHTML = '<label class="radek">Dřevěné madlo<input type="checkbox" id="cMadlo"' + (cfg.madlo ? ' checked' : '') + '></label><div id="dKot" style="margin-top:10px"></div>';
     $('cMadlo').addEventListener('change', (e) => zmen({ madlo: e.target.checked }, true));
     const lak = (mat.POVRCHY[cfg.fin] || {}).typ === 'lak';
-    cipy($('s6'), Zb.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.sub, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id }, true); });
-    $('x6').innerHTML = '<p class="pozn" style="margin-bottom:8px">Odstín práškové barvy (stejná cena):</p><div id="ral"></div><p class="pozn">Odstín napište do poznámky v poptávce. Žárový zinek má květ a odstín podle šarže – každý kus vypadá trochu jinak. Barva na monitoru je orientační.</p>';
-    cipy($('ral'), Object.keys(mat.RAL).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : lak ? '7016' : '', (r) => { ui.ral = Number(r); zmen({ fin: lak ? cfg.fin : 'prasek' }, true); });
+    cipy($('s6'), Zb.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.sub, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen(Object.assign({ fin: id }, ralDoCfg(7016)), true); });
+    $('x6').innerHTML = '<p class="pozn" style="margin:0 0 6px">Umístění</p><div id="umist"></div><p class="pozn" style="margin:12px 0 8px">Odstín práškové barvy (stejná cena):</p><div id="ral"></div><p class="pozn">Žárový zinek má květ a odstín podle šarže – každý kus vypadá trochu jinak. Barva na monitoru je orientační.</p>';
+    cipy($('ral'), Object.keys(mat.RAL).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : lak ? '7016' : '', (r) => { ui.ral = Number(r); zmen(Object.assign({ fin: lak ? cfg.fin : 'prasek' }, ralDoCfg(r)), true); });
+    segment($('umist'), Zb.UMISTENI.map((u) => ({ id: u.id, lab: u.lab })), cfg.umisteni, (id) => zmen({ umisteni: id }, true));
     $('s8').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
     $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary || ui.dilna; studio.invalidate(); uloz(); });
     X.kresliProstredi($('s9'), ['zahrada', 'terasa', 'studio', 'teple']);
@@ -203,7 +212,7 @@ function start() {
     panel();
   }
 
-  cenik('nastaveni/cenik-zabradli', (d) => { rates = Zb.rates0(d); if (A) { A = Zb.analyze(cfg, rates); cena(); } });
+  cenik('nastaveni/cenik-zabradli', (d) => { rates = Zb.rates0(d); if (A) { A = Zb.analyze(cfg, rates); cena(); panel(); } });
   panel();
   studio.prostredi(ui.prostredi).then(() => prekresliVse(true, true)).then(() => {
     udelejNahledy(); studio.na('obnova', udelejNahledy);

@@ -10,6 +10,7 @@ const S = window.Stolecky, KOREN = new URL('../', import.meta.url).href;
 const sdil = zOdkazu();
 let cfg = S.normalize((sdil && sdil.c) || pamet.cti('stolecky-retez') || Object.assign({}, S.DEFAULT_CFG, { model: 'motylek', H: 500, topD: 600 }));
 const ui = Object.assign({ prostredi: 'studio', koty: false, dof: false, svary: true, deska: null, ral: null }, pamet.cti('foto-stolecky-ui') || {}, (sdil && sdil.u) || {});
+if (cfg.fin === 'ral') ui.ral = Number(cfg.ralJiny) || ui.ral;   // odstín zadaný v konfigurátoru
 if (!ui.deska) ui.deska = { ash: 'jasan', oak: 'dub', epoxy: 'epoxid' }[localStorage.getItem('skovo-board-material-v1')] || 'dub';
 let rates = S.DEFAULT_RATES, B = null, sitMotylek = null;
 
@@ -136,10 +137,10 @@ function start() {
     $('x2').innerHTML = '<p class="pozn">' + (aktDeska === 'ocel' ? 'Ocelová deska je součást stolku a je v ceně.' : aktDeska === 'sklo' ? 'Sklo se na podnož lepí. Desku si zajišťujete sami, cena je bez ní.' : 'Dřevěnou nebo epoxidovou desku si zajišťujete sami, cena je bez ní. Rozměry pro truhláře dostanete s nabídkou.') + '</p>';
     /* barva a povrch: 4 povrchy z ceníku + odstíny RAL na přání */
     const lak = (mat.POVRCHY[cfg.fin] || {}).typ === 'lak';
-    cipy($('s3'), S.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.ral, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id }, true); });
-    const ralEl = $('x3'); ralEl.innerHTML = '<p class="pozn" style="margin-bottom:8px">Jiný odstín RAL (prášková barva, stejná cena):</p><div id="ral"></div><p class="pozn">Odstín mimo černou, antracit a bílou napište do poznámky v poptávce. Barva na monitoru je orientační, rozhoduje vzorník RAL.</p>';
+    cipy($('s3'), S.FIN.filter((f) => !f.other).map((f) => ({ id: f.id, lab: f.lab, sub: f.ral, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id, ralJiny: '' }, true); });
+    const ralEl = $('x3'); ralEl.innerHTML = '<p class="pozn" style="margin-bottom:8px">Jiný odstín RAL (prášková barva, stejná cena):</p><div id="ral"></div><p class="pozn">Barva na monitoru je orientační, rozhoduje vzorník RAL.</p>';
     cipy($('ral'), Object.keys(mat.RAL).filter((r) => ![9005, 7016, 9016].includes(Number(r))).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : '', (r) => {
-      ui.ral = Number(r); zmen({ fin: new THREE.Color(mat.RAL[r][1]).getHSL({}).l > 0.6 ? 'white' : 'anth' }, true);
+      ui.ral = Number(r); zmen({ fin: 'ral', ralJiny: String(r) }, true);
     });
     /* detaily */
     $('s4').innerHTML = (mot ? '' : '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>') ;

@@ -14,6 +14,7 @@ const MODELY = [['KS', 'Kosočtverec'], ['PV', 'Pavouk'], ['PZ', 'Pohozenec'], [
 let cfg = K.normalize(MODELY.some((m) => m[0] === ulozena.model) && ulozena.model !== 'MOT' ? ulozena : Object.assign({}, ulozena, { model: 'PV' }));
 const chceMot = ulozena.model === 'MOT';
 const ui = Object.assign({ prostredi: 'studio', koty: false, dof: false, svary: true, deska: null, ral: null }, pamet.cti('foto-umelecke-ui') || {}, (sdil && sdil.u) || {});
+if (cfg.fin === 'ral') ui.ral = Number(cfg.ralJiny) || ui.ral;   // odstín zadaný v konfigurátoru
 if (!ui.deska) ui.deska = { ash: 'jasan', oak: 'dub', epoxy: 'epoxid' }[localStorage.getItem('skovo-board-material-v1')] || 'dub';
 let rates = K.DEFAULT_RATES, A = null;
 
@@ -112,17 +113,18 @@ function start() {
     if (cfg.model === 'KS') h += vyber('vKs', 'Materiál boků', [{ id: 'pas', lab: 'Pásovina na hranu' }, { id: 'jekl', lab: 'Jekl' }], cfg.ksMat);
     if (mot) h += vyber('vSpoj', 'Spojení křídel', [{ id: 'srouby', lab: 'Šrouby (křídla zvlášť)' }, { id: 'svar', lab: 'Svar (jeden kus)' }], cfg.spoj);
     if (!mot && cfg.model !== 'KS') h += vyber('vSize', 'Jekl', K.SIZES.map((s) => ({ id: String(s), lab: s + ' × ' + s + ' mm' })), String(cfg.size));
+    if (!mot) h += vyber('vNohy', 'Pod nohy', window.Podnoze.FEET.map((f) => ({ id: f.id, lab: f.lab })), cfg.nohy);
     $('s2').innerHTML = h;
-    [['vJoint', 'joint'], ['vLay', 'pvLay'], ['vTop', 'top'], ['vKs', 'ksMat'], ['vSpoj', 'spoj'], ['vSize', 'size']].forEach(([id, k]) => { const el = $(id); if (el) el.addEventListener('change', () => zmen({ [k]: k === 'size' ? Number(el.value) : el.value }, true)); });
+    [['vJoint', 'joint'], ['vLay', 'pvLay'], ['vTop', 'top'], ['vKs', 'ksMat'], ['vSpoj', 'spoj'], ['vSize', 'size'], ['vNohy', 'nohy']].forEach(([id, k]) => { const el = $(id); if (el) el.addEventListener('change', () => zmen({ [k]: k === 'size' ? Number(el.value) : el.value }, true)); });
     /* deska */
     cipy($('s3'), [{ id: 'dub', lab: 'Dub' }, { id: 'jasan', lab: 'Jasan' }, { id: 'orech', lab: 'Tmavé dřevo' }, { id: 'epoxid', lab: 'Epoxid' }, { id: 'sklo', lab: 'Sklo' }].map((d) => Object.assign({ img: nahledy[d.id] }, d)), ui.deska, (id) => { ui.deska = id; zmen({}, true); });
     $('x3').innerHTML = (mot ? '' : '<div id="tvar" style="margin-top:10px"></div>') + '<div id="pT"></div><p class="pozn">Deska není součást podnože – cena je bez ní. Otvory a postup pro truhláře dostanete s nabídkou.</p>';
     if (!mot) $('tvar').innerHTML = vyber('vTvar', 'Tvar desky', K.SHAPES, cfg.shape), $('vTvar').addEventListener('change', (e) => zmen({ shape: e.target.value }, true));
     pos.td = posuvnik($('pT'), { lab: 'Tloušťka desky', min: 10, max: 80, step: 1, value: cfg.td }, (v) => zmen({ td: v }));
     const lak = (mat.POVRCHY[cfg.fin] || {}).typ === 'lak';
-    cipy($('s4'), K.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.ral, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id }, true); });
-    $('x4').innerHTML = '<p class="pozn" style="margin-bottom:8px">Jiný odstín RAL (prášková barva, stejná cena):</p><div id="ral"></div><p class="pozn">Odstín mimo černou, antracit a bílou napište do poznámky v poptávce. Barva na monitoru je orientační.</p>';
-    cipy($('ral'), Object.keys(mat.RAL).filter((r) => ![9005, 7016, 9016].includes(Number(r))).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : '', (r) => { ui.ral = Number(r); zmen({ fin: new THREE.Color(mat.RAL[r][1]).getHSL({}).l > 0.6 ? 'white' : 'anth' }, true); });
+    cipy($('s4'), K.FIN.filter((f) => !f.other).map((f) => ({ id: f.id, lab: f.lab, sub: f.ral, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id, ralJiny: '' }, true); });
+    $('x4').innerHTML = '<p class="pozn" style="margin-bottom:8px">Jiný odstín RAL (prášková barva, stejná cena):</p><div id="ral"></div><p class="pozn">Barva na monitoru je orientační.</p>';
+    cipy($('ral'), Object.keys(mat.RAL).filter((r) => ![9005, 7016, 9016].includes(Number(r))).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : '', (r) => { ui.ral = Number(r); zmen({ fin: 'ral', ralJiny: String(r) }, true); });
     $('s5').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
     $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary; studio.invalidate(); uloz(); });
     X.kresliProstredi($('s6'), ['studio', 'teple', 'zahrada', 'terasa']);

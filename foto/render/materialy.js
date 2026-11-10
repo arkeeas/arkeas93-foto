@@ -98,7 +98,7 @@ export function createMaterialy(studio) {
     9016: ['Bílá', '#f1f0ea'], 9010: ['Krémově bílá', '#f1ece1'], 1013: ['Perlová', '#e3d9c6'], 8017: ['Čokoládová', '#442f29'], 6005: ['Mechová zelená', '#114232'], 3004: ['Purpurová červená', '#6b1c23'], 5011: ['Ocelová modrá', '#1a2b3c']
   };
   const POVRCHY = {
-    black: { typ: 'lak', ral: 9005 }, anth: { typ: 'lak', ral: 7016 }, white: { typ: 'lak', ral: 9016 }, raw: { typ: 'surova' },
+    black: { typ: 'lak', ral: 9005 }, ral: { typ: 'lak', ral: 7016 }, anth: { typ: 'lak', ral: 7016 }, white: { typ: 'lak', ral: 9016 }, raw: { typ: 'surova' },
     zn: { typ: 'zinek' }, znpu: { typ: 'zinek', lak: true }, prasek: { typ: 'lak', ral: 7016 }, duplex: { typ: 'lak', ral: 7016, struktura: true }
   };
   function parametry(id, ral) {
