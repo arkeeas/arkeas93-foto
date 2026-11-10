@@ -6,11 +6,12 @@ import * as THREE from 'three';
 import { zaloz } from './render/stranka.js';
 import { hranol, plech, kruh, teleso, housenka, slouc, vHranolu, maticeGeo, V } from './render/geometrie.js';
 import { $, cipy, segment, posuvnik, nf, pamet, zOdkazu, ulozOdkaz, cenik } from './render/ui.js';
+import { dynPanel } from './zabradli-dyn.js';
 
 const Zb = window.Zabradli, KOREN = new URL('../', import.meta.url).href, VERZE = '20261014n';
 const sdil = zOdkazu();
 let cfg = Zb.normalize((sdil && sdil.c) || pamet.cti('zabradli-cfg') || { vypln: 'laser', rada: 'priroda', motiv: 'jelen', sloupky: true, anchor: 'patka', fin: 'prasek', segs: [{ L: 3000, rise: 0 }] });
-const ui = Object.assign({ prostredi: 'zahrada', koty: false, dof: false, svary: true, ral: null, dilna: false }, pamet.cti('foto-zabradli-ui') || {}, (sdil && sdil.u) || {});
+const ui = Object.assign({ prostredi: 'zahrada', koty: false, dof: false, svary: true, ral: null, dilna: false, ksel: null }, pamet.cti('foto-zabradli-ui') || {}, (sdil && sdil.u) || {});
 let rates = Zb.rates0 ? Zb.rates0() : undefined, A = null;
 
 /* ---------- motivy: stahují se až na vyžádání ---------- */
@@ -110,40 +111,45 @@ function start() {
 
   /* ---------- panel voleb ---------- */
   const volby = $('volby');
-  volby.innerHTML = ['Tvar', 'Rozměry', 'Výplň', 'Motiv', 'Madlo a kotvení', 'Barva a povrch', 'Detaily', 'Prostředí'].map((t, i) => '<section class="sekce" id="k' + i + '"><h2>' + t + '<span id="h' + i + '"></span></h2><div id="s' + i + '"></div><div id="x' + i + '"></div></section>').join('');
+  volby.innerHTML = ['Tvar a úseky', 'Rozměry', 'Výplň a profil', 'Motiv', 'Madlo a kotvení', 'Rozmístění kotev', 'Barva a povrch', 'Služby', 'Detaily', 'Prostředí', 'Kontrola zadání'].map((t, i) => '<section class="sekce" id="k' + i + '"><h2>' + t + '<span id="h' + i + '"></span></h2><div id="s' + i + '"></div><div id="x' + i + '"></div></section>').join('');
   const nahledy = {}; let pos = {};
+  const D = dynPanel({ Zb, ui, cfg: () => cfg, A: () => A, zmen: (...a) => zmen(...a), nahledMotivu: (id) => nahledMotivu(id) });
   const tvarId = () => { const s = JSON.stringify(cfg.segs.map((q) => [q.turn || 0, !!q.rise])); const p = Zb.PRESETS.find((q) => JSON.stringify(q.segs.map((w) => [w.turn || 0, !!w.rise])) === s); return p ? p.id : ''; };
   const vypln = () => (cfg.vypln === 'laser' ? (cfg.rada === 'priroda' ? 'P' : 'L') : cfg.vypln === 'geometricky' ? 'G' : cfg.sloupky ? 'A' : 'B');
   const nahledMotivu = (id) => KOREN + (id === 'strom' ? 'assets/zabradli/motiv-strom/zabradli_motiv_950x950x5_nahled.png' : id === 'bunky' ? 'assets/zabradli/motiv-bunky/zabradli_motiv_bunky_950x950x5_nahled.png' : 'assets/zabradli/priroda/' + id + '_nahled.png');
 
   function panel() {
     cipy($('s0'), Zb.PRESETS.map((p) => ({ id: p.id, lab: p.lab, svg: p.icon })), tvarId(), (id) => { const p = Zb.PRESETS.find((q) => q.id === id); zmen({ segs: p.segs.map((s) => Object.assign({}, s)), stavba: null, pole: [], kotvyPos: null }, true, true); });
-    $('s1').innerHTML = cfg.segs.map((_, i) => '<div id="pL' + i + '"></div>').join('') + '<div id="pV"></div>';
+    $('x0').innerHTML = '<div id="dTvar"></div>'; $('x2').innerHTML = '<div id="dProfil"></div>';
+    $('s1').innerHTML = '<div id="pV"></div><div id="pP"></div>';
     pos = { vyska: posuvnik($('pV'), { lab: 'Výška zábradlí', min: 900, max: 1200, step: 10, value: cfg.vyska }, (v) => zmen({ vyska: v })) };
-    cfg.segs.forEach((s, i) => { pos['L' + i] = posuvnik($('pL' + i), { lab: (cfg.segs.length > 1 ? (i + 1) + '. úsek' : 'Délka') + (s.rise ? ' – schodiště (půdorysně)' : ''), min: 800, max: 8000, step: 50, value: s.L }, (v) => { const segs = cfg.segs.map((q) => Object.assign({}, q)); segs[i].L = v; zmen({ segs, kotvyPos: null }); }); });
+    if (cfg.sloupky && cfg.vypln !== 'geometricky') pos.postPitch = posuvnik($('pP'), { lab: 'Rozteč sloupků (nejvýš)', min: cfg.vypln === 'laser' ? Zb.PANEL.postMin : Zb.POST_MIN, max: cfg.vypln === 'laser' ? Zb.PANEL.postMax : Zb.POST_MAX, step: 50, value: cfg.postPitch }, (v) => zmen({ postPitch: v, kotvyPos: null }));
+    $('x1').innerHTML = '<p class="pozn">Délky úseků, schodiště a zatáčení nastavíte v kroku Tvar a úseky.</p>';
     cipy($('s2'), [{ id: 'A', lab: 'Špruše', sub: 'se sloupky', svg: Zb.TYPES[0].icon }, { id: 'B', lab: 'Špruše', sub: 'bez sloupků', svg: Zb.TYPES[1].icon }, { id: 'L', lab: 'Motiv', sub: 'stromy, buňky' }, { id: 'P', lab: 'Příroda', sub: 'zvířata, les' }], vypln(), (id) => {
       zmen(id === 'L' ? { vypln: 'laser', rada: 'abstrakt', sloupky: true, motiv: 'strom', pole: [] } : id === 'P' ? { vypln: 'laser', rada: 'priroda', sloupky: true, motiv: 'jelen', pole: [] } : { vypln: 'standard', sloupky: id === 'A' }, true);
     }, { velke: true });
-    const laser = cfg.vypln === 'laser'; $('k3').hidden = !laser;
+    const laser = cfg.vypln === 'laser', prir = laser && cfg.rada === 'priroda'; $('k3').hidden = !laser;
+    $('s3').hidden = prir; $('x3').innerHTML = '<div id="dPole"></div>';
     if (laser) {
       const sklon = cfg.segs.some((s) => s.rise);
       cipy($('s3'), Zb.MOTIFS.filter((m) => (cfg.rada === 'priroda') === (m.rada === 'priroda')).map((m) => ({ id: m.id, lab: m.lab, sub: m.sub, img: nahledMotivu(m.id) })), cfg.motiv, (id) => zmen({ motiv: id, pole: [] }, true), { velke: true });
-      $('x3').innerHTML = '<div id="pT"></div><p class="pozn">Plech se vypálí laserem. Nejužší můstek ' + Zb.PANEL.webTarget + ' mm a otvor do 110 mm hlídá konfigurátor.' + (cfg.rada === 'priroda' ? ' Motiv se volí pro každé pole zvlášť.' : '') + (sklon && cfg.rada === 'priroda' ? ' Na schodiště jde jen Los, Smrkový les a Motýli.' : '') + '</p>';
+      $('x3').insertAdjacentHTML('afterbegin', '<div id="pT"></div>');
+      $('x3').insertAdjacentHTML('beforeend', '<p class="pozn">Plech se vypálí laserem. Nejužší můstek ' + Zb.PANEL.webTarget + ' mm a otvor do 110 mm hlídá konfigurátor.' + (cfg.rada === 'priroda' ? ' Motiv se volí pro každé pole zvlášť.' : '') + (sklon && cfg.rada === 'priroda' ? ' Na schodiště jde jen Los, Smrkový les a Motýli.' : '') + '</p>');
       const tl = Zb.plechRange([...new Set([cfg.motiv].concat((cfg.pole || []).map((q) => q && q.m).filter(Boolean)))]);
       pos.plech = posuvnik($('pT'), { lab: 'Tloušťka plechu', min: (tl && tl.min) || 3, max: (tl && tl.max) || 6, step: 1, value: cfg.plech }, (v) => zmen({ plech: v }));
     }
-    $('s4').innerHTML = '<label class="radek">Dřevěné madlo<input type="checkbox" id="cMadlo"' + (cfg.madlo ? ' checked' : '') + '></label><div id="kot" style="margin-top:6px"></div>';
+    $('s4').innerHTML = '<label class="radek">Dřevěné madlo<input type="checkbox" id="cMadlo"' + (cfg.madlo ? ' checked' : '') + '></label><div id="dKot" style="margin-top:10px"></div>';
     $('cMadlo').addEventListener('change', (e) => zmen({ madlo: e.target.checked }, true));
-    segment($('kot'), Zb.ANCHOR.filter((a) => cfg.sloupky || (a.id !== 'patka' && a.id !== 'celo')).map((a) => ({ id: a.id, lab: a.lab })), cfg.anchor, (id) => zmen({ anchor: id, kotvyPos: null }, true));
-    $('x4').innerHTML = '<p class="pozn">' + ((Zb.ANCHOR.find((a) => a.id === cfg.anchor) || {}).sub || '') + '</p>';
     const lak = (mat.POVRCHY[cfg.fin] || {}).typ === 'lak';
-    cipy($('s5'), Zb.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.sub, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id }, true); });
-    $('x5').innerHTML = '<p class="pozn" style="margin-bottom:8px">Odstín práškové barvy (stejná cena):</p><div id="ral"></div><p class="pozn">Odstín napište do poznámky v poptávce. Žárový zinek má květ a odstín podle šarže – každý kus vypadá trochu jinak. Barva na monitoru je orientační.</p>';
+    cipy($('s6'), Zb.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.sub, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id }, true); });
+    $('x6').innerHTML = '<p class="pozn" style="margin-bottom:8px">Odstín práškové barvy (stejná cena):</p><div id="ral"></div><p class="pozn">Odstín napište do poznámky v poptávce. Žárový zinek má květ a odstín podle šarže – každý kus vypadá trochu jinak. Barva na monitoru je orientační.</p>';
     cipy($('ral'), Object.keys(mat.RAL).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : lak ? '7016' : '', (r) => { ui.ral = Number(r); zmen({ fin: lak ? cfg.fin : 'prasek' }, true); });
-    $('s6').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
+    $('s8').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
     $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary || ui.dilna; studio.invalidate(); uloz(); });
-    X.kresliProstredi($('s7'), ['zahrada', 'terasa', 'studio', 'teple']);
-    X.mojeFotka($('x7'), () => { stavba.visible = false; studio.invalidate(); });
+    X.kresliProstredi($('s9'), ['zahrada', 'terasa', 'studio', 'teple']);
+    $('s5').innerHTML = '<div id="dKotvy"></div>'; $('s7').innerHTML = '<div id="dSluzby"></div>'; $('s10').innerHTML = '<div id="dKontrola"></div>';
+    X.mojeFotka($('x9'), () => { stavba.visible = false; studio.invalidate(); });
+    if (A) D.dyn();
   }
   const stredDilu = (m) => { const b = [[1e9, 1e9, 1e9], [-1e9, -1e9, -1e9]]; m.solid.verts.forEach((v) => { for (let i = 0; i < 3; i++) { b[0][i] = Math.min(b[0][i], v[i]); b[1][i] = Math.max(b[1][i], v[i]); } }); return b[0].map((v, i) => (v + b[1][i]) / 2); };
   function pohledy() {
@@ -170,7 +176,6 @@ function start() {
     const pole = (A.lay.panels || []).filter((p) => p && p.ok === false);
     const v = $('varovani'), txt = chyby[0] || (pole.length ? 'V ' + pole.length + '. poli nejde plech s tímto motivem vyrobit – zvolte jiný motiv nebo rozměr.' : '');
     v.hidden = !txt; v.textContent = txt;
-    $('x1').innerHTML = (A.warns || []).filter((w) => w.lvl !== 'info').slice(0, 2).map((w) => '<p class="pozn varuj">' + w.t + '</p>').join('');
   }
 
   let cekam = 0, poprve = true, chciCelek = false, chciPanel = false;
@@ -178,17 +183,18 @@ function start() {
     panelTez = panelTez || chciPanel; prizpusob = prizpusob || chciCelek; chciPanel = chciCelek = false;
     const chybi = potrebneMotivy();
     if (chybi.length) { $('stav').classList.remove('ok'); $('stav').textContent = 'Stahuji motiv…'; try { await Promise.all(chybi.map((id) => nactiSkript('assets/zabradli/motiv-' + id + '.js'))); } catch (e) { $('stav').textContent = 'Motiv se nepodařilo stáhnout.'; return; } }
-    postav(); cena(); pohledy(); if (panelTez) panel();
+    postav(); cena(); pohledy(); if (panelTez) panel(); else D.dyn();
     if (prizpusob || poprve) { studio.pohled('celek', poprve ? 0 : 600); poprve = false; }
   }
   prekresli = () => { cancelAnimationFrame(cekam); cekam = requestAnimationFrame(() => prekresliVse(false, false)); };
   function zmen(p, panelTez, prizpusob) {
     const pred = [cfg.fin, M.ocel.userData.povrch[1]];
+    if (('segs' in p || 'sloupky' in p) && !('kotvyPos' in p)) { p = Object.assign({ kotvyPos: null }, p); ui.ksel = null; }
     cfg = Zb.normalize(Object.assign({}, cfg, p));
     if (cfg.fin !== pred[0] || ui.ral !== pred[1]) { mat.prelad([M.ocel, M.kotva], cfg.fin, ui.ral); const h = mat.hrana(cfg.fin, ui.ral), s = mat.svar(cfg.fin, ui.ral); M.hrana.copy(h); M.svar.copy(s); h.dispose(); s.dispose(); }
     chciPanel = chciPanel || !!panelTez; chciCelek = chciCelek || !!prizpusob;
     cancelAnimationFrame(cekam); cekam = requestAnimationFrame(() => prekresliVse());
-    if (!panelTez) Object.keys(pos).forEach((k) => { if (k[0] === 'L') pos[k].set(cfg.segs[+k.slice(1)].L); else pos[k].set(cfg[k]); });
+    if (!panelTez) Object.keys(pos).forEach((k) => { if (cfg[k] != null) pos[k].set(cfg[k]); });
     uloz();
   }
   function udelejNahledy() {

@@ -8,7 +8,7 @@ export const nf = (n, d = 0) => Number(n).toLocaleString('cs-CZ', { maximumFract
 /* čipy: [{ id, lab, sub, img | barva | svg }] */
 export function cipy(el, polozky, aktivni, vyber, o = {}) {
   el.className = 'mrizka' + (o.velke ? ' velke' : '');
-  el.innerHTML = polozky.map((p) => '<button type="button" class="cip" data-id="' + esc(p.id) + '" aria-pressed="' + (p.id === aktivni) + '"' + (p.title ? ' title="' + esc(p.title) + '"' : '') + '>' +
+  el.innerHTML = polozky.map((p) => '<button type="button" class="cip" data-id="' + esc(p.id) + '" aria-pressed="' + (p.id === aktivni) + '"' + (p.dis ? ' disabled' : '') + (p.title ? ' title="' + esc(p.title) + '"' : '') + '>' +
     (p.img ? '<img alt="" src="' + p.img + '">' : p.barva ? '<span class="koule" style="background:' + p.barva + '"></span>' : p.svg ? '<svg viewBox="0 0 64 48" aria-hidden="true"><path d="' + p.svg + '"></path></svg>' : '') +
     '<span class="lab">' + esc(p.lab) + '</span>' + (p.sub ? '<span class="sub">' + esc(p.sub) + '</span>' : '') + '</button>').join('');
   el.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => vyber(b.dataset.id)));

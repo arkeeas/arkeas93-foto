@@ -24,6 +24,7 @@ Tok: panel voleb → config → jádro spočítá díly+cenu → `*-foto.js` vyr
 ## Stav (aktualizuj při změně, jinak nic nepřidávej)
 - Hotovo: tři stránky, HDRI/PBR/AO/doostření, zaoblené jekly, svary, motivy skrz, zoom na kurzor, sdílení odkazem, kóty, GLB/AR základ, test cen. Výkon měřen jen na stolním PC.
 - Nehotovo: poptávka do firmy (jen `localStorage`), PDF nabídka, galerie, AR neověřeno na telefonu, ladění perspektivy vlastní fotky, zámky/drážky se nekreslí, motýlí podnož má ostré hrany, test na notebooku/telefonu. Detail: `foto/README.md`.
+- Zábradlí foto má od 2026-11-10 všechna nastavení starého konfigurátoru: úseky/zatočení/schodiště, „Podle stavby“, typy kotvení + do čeho + konce ke zdi + plotny + rozmístění kotev tažením, motiv Příroda po polích (každé pole jiný styl, varianty motýla, posun výřezu), profil/špruše/přesah, služby, kontrola. Kód: `foto/zabradli-dyn.js` (+ panel v `zabradli-foto.js`). Nepushnuto.
 - Poslední větší změna: 2026-11-10 vydáno jako samostatný repo (původně složka `foto/` v produkci, větev `foto-vizual`).
 
 ## Paměť (Obsidian)

@@ -118,3 +118,36 @@ dialog.okno model-viewer { width: 100%; height: min(60vh, 520px); background: va
 /* jen scéna (snímky, náhledové obrázky): ?cisto=1 */
 body.cisto .lista, body.cisto .panel, body.cisto .titul, body.cisto .nastroje, body.cisto .pohledy, body.cisto .stav, body.cisto .varovani3d { display: none !important; }
 body.cisto .foto { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+
+/* zábradlí: úseky, stavba, pole Příroda, kotvení */
+.radek-btn { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.tl.mala, .radek-btn .tl { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; font-weight: 600; font-size: 13px; color: var(--ink); }
+.radek-btn .tl:hover { border-color: var(--muted); }
+.radek-btn .tl:disabled, .cip:disabled { opacity: .4; cursor: not-allowed; }
+.pole2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; flex: 1; }
+.pole2 label, .kbar label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+.pole2 input, .pole2 select, .mrow input, .mrow select, .kbar input { border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 8px; font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); min-height: 36px; width: 100%; box-sizing: border-box; }
+input.miss { border-color: var(--bad); background: var(--bad-bg); } input.chk { border-color: var(--warn-ink); }
+.usek { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; padding: 8px; border: 1px solid var(--line-soft); border-radius: 10px; }
+.usek .no { font-weight: 600; width: 20px; padding-top: 22px; text-align: center; }
+.del { border: 0; background: transparent; font-size: 20px; color: var(--muted); padding: 22px 6px 0; } .del:disabled { opacity: .3; }
+.blk { border: 1px solid var(--line-soft); border-radius: 10px; padding: 8px 10px; margin-top: 8px; } .blk.koutek { background: #F7F6F3; }
+.blk-h { display: flex; justify-content: space-between; font-weight: 600; font-size: 13px; } .blk-h .del { padding: 0 4px; }
+.mrow { display: grid; grid-template-columns: 1fr 96px auto; gap: 8px; align-items: center; margin-top: 6px; font-size: 13px; }
+.mrow .k { display: inline-block; min-width: 14px; color: var(--accent); }
+.mrow .help { border: 1px solid var(--line); border-radius: 50%; width: 26px; height: 26px; background: var(--surface); font-weight: 600; }
+.howto { font-size: 12.5px; color: var(--muted); background: #F7F6F3; border-radius: 8px; padding: 8px 10px; margin-top: 4px; }
+.plan svg { width: 100%; height: auto; } .plan text { font-size: 11px; fill: var(--muted); }
+.vykaz { display: block; width: 100%; text-align: left; border: 0; border-radius: 8px; padding: 7px 10px; margin-top: 5px; font-size: 13px; background: var(--line-soft); }
+.vykaz.w-bad { background: var(--bad-bg); color: var(--bad); } .vykaz.w-warn { background: var(--warn-bg); color: var(--warn-ink); }
+.pole-box { border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+.pole-h { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-bottom: 8px; } .pole-h span { color: var(--muted); }
+.nahled-pole { width: 100%; height: auto; border-radius: 6px; margin: 8px 0 4px; display: block; }
+.varianty { display: flex; gap: 6px; margin: 6px 0 0; } .varianty button { border: 1.5px solid var(--line); background: var(--surface); border-radius: 8px; width: 34px; height: 30px; font-weight: 600; }
+.varianty button[aria-pressed="true"] { border-color: var(--ink); background: #F7F6F3; }
+.kstrip svg { width: 100%; height: auto; touch-action: pan-y; } .kstrip text { font-size: 11px; fill: var(--muted); } .kstrip text.warn { fill: #b85c00; font-weight: 600; } .kstrip text.bad { fill: var(--bad); font-weight: 600; }
+.kstrip .rail { stroke: var(--ink); stroke-width: 3; } .kstrip .vt { stroke: var(--line); stroke-dasharray: 3 3; } .kstrip .jt { stroke: var(--muted); } .kstrip .cd { fill: var(--muted); opacity: .5; }
+.kstrip .an { fill: var(--accent); stroke: #fff; stroke-width: 2; cursor: grab; touch-action: none; } .kstrip .an.fix { cursor: default; opacity: .8; } .kstrip .an.sel { stroke: var(--ink); } .kstrip .wall { fill: var(--ink); }
+.kbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.sluzba { border: 1px solid var(--line-soft); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; } .sluzba small { color: var(--muted); } .sluzba .p { font-weight: 600; white-space: nowrap; }
+.sekce .pozn.ok { color: #2d6a3a; background: #eaf5ec; padding: 8px 10px; border-radius: 8px; }
