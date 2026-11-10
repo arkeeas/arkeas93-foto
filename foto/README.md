@@ -1,6 +1,6 @@
 # Foto náhled (fotorealistický vizuál)
 
-Tři nové stránky nad stávajícím konfigurátorem. Produkční stránky v kořeni repozitáře se **nezměnily**; celé to jde vrátit smazáním složky `foto/`.
+Tři stránky fotorealistického náhledu.
 
 | Stránka | Co ukazuje | Jádro (beze změny) |
 |---|---|---|
@@ -9,14 +9,14 @@ Tři nové stránky nad stávajícím konfigurátorem. Produkční stránky v ko
 | `umelecke-foto.html` | Kosočtverec, Pavouk, Pohozenec, Motýlí podnož | `../core.js`, `../vyvoj.js`, `../motyli-podnoz*.js` |
 | `index.html` | rozcestník | |
 
-Rozměry, díly, zámky, meze, cena i hmotnost se počítají ve stejných souborech jako dnes. Tady se mění jen obraz, kamera, prostředí a panel voleb. Konfigurace se ukládá pod stejnými klíči jako na produkčních stránkách (`stolecky-retez`, `zabradli-cfg`, `podnoz-cfg-wip`), takže **Nezávazně poptat** otevře podrobný konfigurátor se stejným nastavením a poptávka jde stejnou cestou jako dnes.
+Rozměry, díly, zámky, meze, cena i hmotnost se počítají ve stejných souborech jako dnes. Tady se mění jen obraz, kamera, prostředí a panel voleb. Konfigurace se ukládá do `localStorage` (`stolecky-retez`, `zabradli-cfg`, `podnoz-cfg-wip`).
 
 ## Spuštění
 Bez buildu. Stačí statický server z kořene repozitáře (kvůli ES modulům nejde otevřít z disku přes `file://`):
 ```bash
 python3 -m http.server 8000
 ```
-a otevřít `http://localhost:8000/foto/`. Na GitHub Pages bude adresa `…/arkeas93/foto/`.
+a otevřít `http://localhost:8000/foto/`. Na GitHub Pages bude adresa `…/arkeas93-foto/foto/`.
 
 `?ladeni=1` ukáže FPS, počet trojúhelníků a volání; `?cisto=1` schová ovládání (jen scéna, pro snímky).
 
@@ -45,7 +45,7 @@ a otevřít `http://localhost:8000/foto/`. Na GitHub Pages bude adresa `…/arke
 Sdílení konfigurace odkazem (`#cfg=…`), kóty jako vrstva, fotka PNG 2×, „V místnosti“ (GLB + `<model-viewer>`, stolečky a umělecké), vlastní fotka jako pozadí u zábradlí, technický pohled u zábradlí, obnova po ztrátě WebGL kontextu, motivy se stahují až při použití, vzorník RAL s náhledem materiálu na kouli.
 
 ## Co hotové není
-- **Poptávky do firmy:** foto stránky poptávku neposílají, předají ji podrobnému konfigurátoru. Ten ji na GitHub Pages ukládá jen do prohlížeče (`lokal.js`).
+- **Poptávky do firmy:** foto stránky poptávku neposílají.
 - **Odstín RAL mimo ceník** se do poptávky nepřenáší (zákazník ho píše do poznámky).
 - **PDF nabídka, galerie realizací, stránka „jak to vzniká“** nejsou.
 - **AR** je jen základ: na Androidu WebXR, na iOS Quick Look; neověřeno na telefonu.

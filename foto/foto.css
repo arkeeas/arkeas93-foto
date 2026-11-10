@@ -1,4 +1,4 @@
-/* Foto-vizuál – společný vzhled tří stránek (barvy a písma převzaté z produkčního konfigurátoru) */
+/* Foto-vizuál – společný vzhled tří stránek */
 :root {
   --ground: #FBFAF7; --surface: #FFFFFF; --stage: #ECEEF1; --ink: #17181A; --muted: #5E5A54; --line: #D9D5CD; --line-soft: #ECE9E3;
   --accent: #B8440F; --accent-ink: #8E3309; --accent-soft: #FFF4EC;

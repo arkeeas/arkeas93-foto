@@ -104,7 +104,7 @@ function start() {
         W: posuvnik($('pW'), { lab: 'Šířka', min: 500, max: 1200, step: 50, value: cfg.W }, (v) => zmen({ W: v, dW: v })),
         H: posuvnik($('pH'), { lab: 'Výška', min: 400, max: 1100, step: 10, value: cfg.H }, (v) => zmen({ H: v })) };
     }
-    /* provedení podle modelu – jen hlavní volby, zbytek v podrobném konfigurátoru */
+    /* provedení podle modelu – jen hlavní volby */
     let h = '';
     if (cfg.model === 'PZ') h += vyber('vJoint', 'Spojení noh', K.JOINTS, cfg.joint);
     if (cfg.model === 'PV') h += vyber('vLay', 'Rozmístění noh', K.PV_LAYS, cfg.pvLay);
@@ -123,7 +123,7 @@ function start() {
     cipy($('s4'), K.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.ral, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id }, true); });
     $('x4').innerHTML = '<p class="pozn" style="margin-bottom:8px">Jiný odstín RAL (prášková barva, stejná cena):</p><div id="ral"></div><p class="pozn">Odstín mimo černou, antracit a bílou napište do poznámky v poptávce. Barva na monitoru je orientační.</p>';
     cipy($('ral'), Object.keys(mat.RAL).filter((r) => ![9005, 7016, 9016].includes(Number(r))).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : '', (r) => { ui.ral = Number(r); zmen({ fin: new THREE.Color(mat.RAL[r][1]).getHSL({}).l > 0.6 ? 'white' : 'anth' }, true); });
-    $('s5').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p><div class="drobne"><a href="https://arkeeas.github.io/arkeas93/vyvoj.html">Všechny volby (uchycení k desce, pásoviny, kusy)</a></div>';
+    $('s5').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
     $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary; studio.invalidate(); uloz(); });
     X.kresliProstredi($('s6'), ['studio', 'teple', 'zahrada', 'terasa']);
     X.kresliPohledy([{ id: 'celek', lab: 'Celek' }, { id: 'zepredu', lab: 'Zepředu' }, { id: 'zboku', lab: 'Zboku' }, { id: 'shora', lab: 'Shora' },

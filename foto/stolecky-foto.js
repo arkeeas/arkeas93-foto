@@ -1,7 +1,6 @@
 /* Foto náhled konferenčních stolečků (Motýlek, Řetěz).
  * Rozměry, díly, cenu i hmotnost počítá beze změny `stolecky-core.js`; tahle stránka dělá jen obraz a volby okolo.
- * Konfigurace se ukládá pod stejným klíčem jako na produkční stránce (stolecky.html), takže „Nezávazně poptat“
- * otevře podrobný konfigurátor se stejným nastavením. */
+ */
 import * as THREE from 'three';
 import { zaloz } from './render/stranka.js';
 import { hranol, plech, kruh, sit, housenka, slouc, orizni } from './render/geometrie.js';
@@ -143,8 +142,7 @@ function start() {
       ui.ral = Number(r); zmen({ fin: new THREE.Color(mat.RAL[r][1]).getHSL({}).l > 0.6 ? 'white' : 'anth' }, true);
     });
     /* detaily */
-    $('s4').innerHTML = (mot ? '' : '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>') +
-      '<div class="drobne"><a href="https://arkeeas.github.io/arkeas93/stolecky.html">Všechny volby (profil, uchycení, kusy)</a></div>';
+    $('s4').innerHTML = (mot ? '' : '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>') ;
     if (!mot) $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary; studio.invalidate(); uloz(); });
     X.kresliProstredi($('s5'), ['studio', 'teple', 'zahrada', 'terasa']);
     X.kresliPohledy([{ id: 'celek', lab: 'Celek' }, { id: 'zepredu', lab: 'Zepředu' }, { id: 'zboku', lab: 'Zboku' }, { id: 'shora', lab: 'Shora' },
@@ -168,7 +166,6 @@ function start() {
     $('cena').textContent = nf(Xp.vat) + ' Kč';
     $('cenaPod').textContent = 'orientačně s DPH · ' + nf(Xp.price) + ' Kč bez DPH · ' + nf(B.kg, 1) + ' kg' + (mot && cfg.motylekTop !== 'vlastni' ? '' : ' · bez desky');
     const w = B.warn || [], v = $('varovani'); v.hidden = !w.length; v.textContent = w[0] || '';
-    $('poptat').setAttribute('aria-disabled', String(!!w.length && !mot));
   }
 
   let cekam = 0;

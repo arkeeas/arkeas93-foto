@@ -128,7 +128,7 @@ function start() {
     if (laser) {
       const sklon = cfg.segs.some((s) => s.rise);
       cipy($('s3'), Zb.MOTIFS.filter((m) => (cfg.rada === 'priroda') === (m.rada === 'priroda')).map((m) => ({ id: m.id, lab: m.lab, sub: m.sub, img: nahledMotivu(m.id) })), cfg.motiv, (id) => zmen({ motiv: id, pole: [] }, true), { velke: true });
-      $('x3').innerHTML = '<div id="pT"></div><p class="pozn">Plech se vypálí laserem. Nejužší můstek ' + Zb.PANEL.webTarget + ' mm a otvor do 110 mm hlídá konfigurátor.' + (cfg.rada === 'priroda' ? ' Motiv pro každé pole zvlášť a jeho posun nastavíte v podrobném konfigurátoru.' : '') + (sklon && cfg.rada === 'priroda' ? ' Na schodiště jde jen Los, Smrkový les a Motýli.' : '') + '</p>';
+      $('x3').innerHTML = '<div id="pT"></div><p class="pozn">Plech se vypálí laserem. Nejužší můstek ' + Zb.PANEL.webTarget + ' mm a otvor do 110 mm hlídá konfigurátor.' + (cfg.rada === 'priroda' ? ' Motiv se volí pro každé pole zvlášť.' : '') + (sklon && cfg.rada === 'priroda' ? ' Na schodiště jde jen Los, Smrkový les a Motýli.' : '') + '</p>';
       const tl = Zb.plechRange([...new Set([cfg.motiv].concat((cfg.pole || []).map((q) => q && q.m).filter(Boolean)))]);
       pos.plech = posuvnik($('pT'), { lab: 'Tloušťka plechu', min: (tl && tl.min) || 3, max: (tl && tl.max) || 6, step: 1, value: cfg.plech }, (v) => zmen({ plech: v }));
     }
@@ -140,8 +140,7 @@ function start() {
     cipy($('s5'), Zb.FIN.map((f) => ({ id: f.id, lab: f.lab, sub: f.sub, img: nahledy['fin:' + f.id] })), ui.ral && lak ? '' : cfg.fin, (id) => { ui.ral = null; zmen({ fin: id }, true); });
     $('x5').innerHTML = '<p class="pozn" style="margin-bottom:8px">Odstín práškové barvy (stejná cena):</p><div id="ral"></div><p class="pozn">Odstín napište do poznámky v poptávce. Žárový zinek má květ a odstín podle šarže – každý kus vypadá trochu jinak. Barva na monitoru je orientační.</p>';
     cipy($('ral'), Object.keys(mat.RAL).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : lak ? '7016' : '', (r) => { ui.ral = Number(r); zmen({ fin: lak ? cfg.fin : 'prasek' }, true); });
-    $('s6').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>' +
-      '<div class="drobne"><a href="https://arkeeas.github.io/arkeas93/zabradli.html">Všechny volby (stavba, profily, kotvy, služby)</a></div>';
+    $('s6').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
     $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary || ui.dilna; studio.invalidate(); uloz(); });
     X.kresliProstredi($('s7'), ['zahrada', 'terasa', 'studio', 'teple']);
     X.mojeFotka($('x7'), () => { stavba.visible = false; studio.invalidate(); });
@@ -171,7 +170,6 @@ function start() {
     const pole = (A.lay.panels || []).filter((p) => p && p.ok === false);
     const v = $('varovani'), txt = chyby[0] || (pole.length ? 'V ' + pole.length + '. poli nejde plech s tímto motivem vyrobit – zvolte jiný motiv nebo rozměr.' : '');
     v.hidden = !txt; v.textContent = txt;
-    $('poptat').setAttribute('aria-disabled', String(!!chyby.length));
     $('x1').innerHTML = (A.warns || []).filter((w) => w.lvl !== 'info').slice(0, 2).map((w) => '<p class="pozn varuj">' + w.t + '</p>').join('');
   }
 

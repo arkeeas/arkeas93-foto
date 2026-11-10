@@ -51,7 +51,7 @@ export const pamet = {
   cti(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
   zapis(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* bez úložiště */ } }
 };
-/* ceník z dílny (stejný dokument jako produkční stránky; mimo Claude ho dodá lokal.js) */
+/* ceník z dílny (mimo Claude ho dodá lokal.js) */
 export async function cenik(cesta, pouzij) {
   try { const db = window.claude && await window.claude.use('db'); if (db) db.doc(cesta).onSnapshot((s) => { if (s.exists) pouzij(s.data()); }, () => {}); } catch (e) { /* výchozí sazby */ }
 }
