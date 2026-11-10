@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Umělecké podnože – foto náhled</title>
+<meta name="description" content="Umělecké ocelové podnože stolů: Kosočtverec, Pavouk, Pohozenec a Motýlí podnož. Nastavte rozměr a prohlédněte si stůl jako na fotce.">
+<meta property="og:title" content="Umělecké podnože stolů">
+<meta property="og:description" content="Kosočtverec, Pavouk, Pohozenec a Motýlí podnož – jako na fotce.">
+<meta property="og:image" content="assets/og-umelecke.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%23B8440F%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
+<link rel="stylesheet" href="foto.css?v=1">
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/" } }</script>
+</head>
+<body>
+<header class="lista">
+  <div class="znacka">Konfigurátor<small>foto náhled</small></div>
+  <nav aria-label="Výrobky">
+    <a href="stolecky-foto.html">Stolečky</a>
+    <a href="zabradli-foto.html">Zábradlí</a>
+    <a href="umelecke-foto.html" aria-current="page">Umělecké</a>
+  </nav>
+  <a class="zpet" href="https://arkeeas.github.io/arkeas93/vyvoj.html">Podrobný konfigurátor</a>
+</header>
+<main class="foto">
+  <section class="scena" aria-label="Pohled na stůl">
+    <div class="platno" id="platno"></div>
+    <svg class="koty" id="koty" aria-hidden="true"></svg>
+    <div class="titul"><h1 id="nazev">Podnož</h1><p id="popis"></p></div>
+    <div class="varovani3d" id="varovani" role="alert" hidden></div>
+    <div class="nastroje" id="nastroje"></div>
+    <div class="pohledy" id="pohledy" role="group" aria-label="Pohledy"></div>
+    <div class="stav" id="stav" role="status">Načítám…</div>
+  </section>
+  <aside class="panel" aria-label="Volby podnože">
+    <div class="volby" id="volby"></div>
+    <div class="pata">
+      <div class="cena" id="cena">–</div>
+      <a class="poptat" id="poptat" href="https://arkeeas.github.io/arkeas93/vyvoj.html">Nezávazně poptat</a>
+      <div class="cena-pod" id="cenaPod"></div>
+    </div>
+  </aside>
+</main>
+<script src="../lokal.js"></script>
+<script src="../core.js?v=20261008g"></script>
+<script src="../vyvoj.js?v=20261008j"></script>
+<script type="module" src="umelecke-foto.js?v=1"></script>
+</body>
+</html>

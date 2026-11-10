@@ -1,0 +1,120 @@
+/* Foto-vizuál – společný vzhled tří stránek (barvy a písma převzaté z produkčního konfigurátoru) */
+:root {
+  --ground: #FBFAF7; --surface: #FFFFFF; --stage: #ECEEF1; --ink: #17181A; --muted: #5E5A54; --line: #D9D5CD; --line-soft: #ECE9E3;
+  --accent: #B8440F; --accent-ink: #8E3309; --accent-soft: #FFF4EC;
+  --ok: #2E7D4F; --warn-bg: #FFF1DD; --warn: #B86200; --warn-ink: #7A4100; --bad-bg: #FCE9E7; --bad: #B3261E;
+  --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif; --sans: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+  --panel-w: 400px; color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; background: var(--ground); color: var(--ink); }
+body { font: 15px/1.45 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+
+.lista { display: flex; align-items: center; gap: 18px; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--line); flex: none; }
+.lista .znacka { font-family: var(--serif); font-size: 22px; line-height: 1; white-space: nowrap; }
+.lista .znacka small { font: 600 11px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-left: 8px; vertical-align: middle; }
+.lista nav { display: flex; gap: 4px; margin-left: auto; background: var(--line-soft); border-radius: 8px; padding: 3px; }
+.lista nav a { color: var(--ink); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.lista nav a[aria-current] { background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.lista .zpet { font-size: 13px; color: var(--muted); white-space: nowrap; }
+
+.foto { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-w); }
+.scena { position: relative; background: var(--stage); min-height: 0; overflow: hidden; }
+.scena .platno { position: absolute; inset: 0; }
+.scena .bez3d { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; color: var(--muted); text-align: center; }
+.titul { position: absolute; left: 22px; top: 18px; pointer-events: none; max-width: 60%; }
+.titul h1 { font: 400 clamp(26px, 3.4vw, 40px)/1 var(--serif); margin: 0; text-wrap: balance; text-shadow: 0 0 14px rgba(255,255,255,.85), 0 0 3px rgba(255,255,255,.9); }
+.titul p { margin: 6px 0 0; color: var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; display: inline-block; background: rgba(255,255,255,.72); backdrop-filter: blur(6px); padding: 2px 9px; border-radius: 999px; }
+
+.pohledy, .nastroje { position: absolute; display: flex; gap: 6px; flex-wrap: wrap; }
+.pohledy { left: 16px; bottom: 16px; right: 120px; }
+.nastroje { right: 16px; top: 16px; flex-direction: column; align-items: flex-end; }
+.tl { border: 1px solid rgba(23,24,26,.14); background: rgba(255,255,255,.86); backdrop-filter: blur(8px); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; line-height: 1.2; min-height: 34px; }
+.tl:hover { background: #fff; border-color: rgba(23,24,26,.4); }
+.tl[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.tl.hlavni { background: var(--ink); color: #fff; border-color: var(--ink); }
+.nastroje .dalsi { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.tl.vice { display: none; font-size: 18px; line-height: 1; padding: 4px 12px; }
+.stav { position: absolute; right: 16px; bottom: 16px; font-size: 12px; color: var(--muted); background: rgba(255,255,255,.8); border-radius: 999px; padding: 4px 10px; font-variant-numeric: tabular-nums; transition: opacity .4s; }
+.stav.ok { opacity: 0; }
+.varovani3d { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); background: var(--bad-bg); color: var(--bad); border: 1px solid var(--bad); border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 600; max-width: min(520px, 70%); text-align: center; }
+.koty { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.koty line { stroke: var(--accent); stroke-width: 1.5; }
+.koty text { font: 600 13px var(--sans); fill: var(--accent-ink); paint-order: stroke; stroke: rgba(255,255,255,.9); stroke-width: 4px; font-variant-numeric: tabular-nums; }
+
+.panel { background: var(--surface); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.panel .volby { flex: 1; overflow-y: auto; padding: 6px 20px 18px; overscroll-behavior: contain; }
+.sekce { padding: 16px 0 14px; border-bottom: 1px solid var(--line-soft); }
+.sekce:last-child { border-bottom: 0; }
+.sekce h2 { font: 600 12px/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 10px; display: flex; justify-content: space-between; gap: 10px; }
+.sekce h2 span { font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.sekce .pozn { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+.sekce .pozn.varuj { color: var(--warn-ink); background: var(--warn-bg); padding: 8px 10px; border-radius: 8px; }
+.sekce .pozn.chyba { color: var(--bad); background: var(--bad-bg); padding: 8px 10px; border-radius: 8px; }
+
+.mrizka { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+.mrizka.velke { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+.cip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px 6px 7px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; min-height: 64px; }
+.cip:hover { border-color: var(--muted); }
+.cip[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); background: #F7F6F3; }
+.cip img, .cip .koule { width: 44px; height: 44px; border-radius: 50%; display: block; background: var(--line-soft); object-fit: cover; }
+.cip .lab { font-size: 12.5px; font-weight: 600; line-height: 1.15; }
+.cip .sub { font-size: 11px; color: var(--muted); line-height: 1.15; }
+.cip svg { width: 56px; height: 40px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.segment { display: flex; background: var(--line-soft); border-radius: 10px; padding: 3px; gap: 3px; }
+.segment button { flex: 1; border: 0; background: transparent; border-radius: 8px; padding: 9px 8px; font-weight: 600; font-size: 14px; min-height: 40px; }
+.segment button[aria-pressed="true"] { background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.14); }
+.posuv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; margin-top: 10px; }
+.posuv:first-of-type { margin-top: 0; }
+.posuv label { font-size: 14px; font-weight: 500; }
+.posuv output { font-weight: 600; font-variant-numeric: tabular-nums; }
+.posuv input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); height: 28px; margin: 0; }
+.radek { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 14px; }
+.radek input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); }
+select.vyber { width: 100%; padding: 9px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); }
+
+.pata { border-top: 1px solid var(--line); padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: center; background: var(--surface); flex: none; }
+.cena { font: 400 32px/1 var(--serif); font-variant-numeric: tabular-nums; }
+.cena-pod { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; grid-column: 1; }
+.poptat { grid-row: 1 / span 2; grid-column: 2; background: var(--accent); color: #fff; border: 0; border-radius: 12px; padding: 13px 18px; font-weight: 600; font-size: 15px; text-decoration: none; text-align: center; }
+.poptat:hover { background: var(--accent-ink); }
+.poptat[aria-disabled="true"] { background: var(--line); color: var(--muted); pointer-events: none; }
+.drobne { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.drobne button, .drobne a { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 11px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ink); }
+.drobne button:hover, .drobne a:hover { border-color: var(--muted); }
+.hlaska { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 9px 16px; border-radius: 999px; font-size: 14px; z-index: 50; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+dialog.okno { border: 0; border-radius: 16px; padding: 0; width: min(720px, 94vw); box-shadow: 0 20px 80px rgba(0,0,0,.35); }
+dialog.okno::backdrop { background: rgba(23,24,26,.5); }
+dialog.okno header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line-soft); font-weight: 600; }
+dialog.okno .telo { padding: 16px 18px 20px; }
+dialog.okno model-viewer { width: 100%; height: min(60vh, 520px); background: var(--stage); border-radius: 10px; }
+
+@media (max-width: 900px) {
+  body { overflow: hidden; }
+  .lista { padding: 8px 12px; gap: 10px; }
+  .lista .zpet, .lista .znacka small { display: none; }
+  .lista nav a { padding: 6px 9px; font-size: 13px; }
+  .foto { grid-template-columns: 1fr; grid-template-rows: minmax(0, 54fr) minmax(0, 46fr); }
+  .panel { border-left: 0; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; margin-top: -14px; z-index: 2; box-shadow: 0 -6px 24px rgba(0,0,0,.1); }
+  .panel .volby { padding: 2px 14px 12px; }
+  .pata { padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .cena { font-size: 26px; }
+  .titul { left: 12px; top: 10px; } .titul h1 { font-size: 24px; } .titul p { font-size: 12.5px; }
+  .pohledy { left: 8px; bottom: 22px; right: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .pohledy .tl { flex: none; }
+  .nastroje { right: 8px; top: 8px; }
+  .tl.vice { display: inline-block; }
+  .nastroje .dalsi { display: none; }
+  .nastroje.otevrene .dalsi { display: flex; }
+  .stav { bottom: auto; top: 56px; right: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* jen scéna (snímky, náhledové obrázky): ?cisto=1 */
+body.cisto .lista, body.cisto .panel, body.cisto .titul, body.cisto .nastroje, body.cisto .pohledy, body.cisto .stav, body.cisto .varovani3d { display: none !important; }
+body.cisto .foto { grid-template-columns: 1fr; grid-template-rows: 1fr; }
