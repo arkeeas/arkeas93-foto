@@ -54,9 +54,11 @@ export function zaloz(o) {
   studio.na('kvalita', () => { stav.classList.toggle('ok', !ladeni); if (!ladeni) stav.textContent = 'Hotovo'; if (ladeni) console.log('[foto] doostřeno', studio.info()); });
 
   /* prostředí – čipy s náhledem */
-  function kresliProstredi(el, seznam) {
-    cipy(el, seznam.map((id) => ({ id, lab: PROSTREDI[id].lab, barva: PROSTREDI[id].pozadi === 'hdr' ? (id === 'zahrada' ? 'linear-gradient(#b9d3e6 45%,#7c9a62 46%)' : 'linear-gradient(#8fb8e0 55%,#c9c5bd 56%)') : 'radial-gradient(circle at 50% 40%,' + PROSTREDI[id].pozadi[0] + ',' + PROSTREDI[id].pozadi[1] + ')' })),
-      ui.prostredi, (id) => { ui.prostredi = id; studio.prostredi(id).then(() => o.poProstredi && o.poProstredi()); kresliProstredi(el, seznam); o.zmenaUi && o.zmenaUi(); }, { velke: false });
+  function kresliProstredi(el, seznam, popis) {
+    const barva = (id) => (PROSTREDI[id].pozadi === 'hdr' ? (id === 'zahrada' ? 'linear-gradient(#b9d3e6 45%,#7c9a62 46%)' : 'linear-gradient(#8fb8e0 55%,#c9c5bd 56%)') : 'radial-gradient(circle at 50% 40%,' + PROSTREDI[id].pozadi[0] + ',' + PROSTREDI[id].pozadi[1] + ')');
+    cipy(el, seznam.map((id) => ({ id, lab: PROSTREDI[id].lab, barva: barva(id) })),
+      ui.prostredi, (id) => { ui.prostredi = id; studio.prostredi(id).then(() => o.poProstredi && o.poProstredi()); kresliProstredi(el, seznam, popis); o.zmenaUi && o.zmenaUi(); }, { velke: false });
+    if (popis && PROSTREDI[ui.prostredi]) popis(PROSTREDI[ui.prostredi].lab, barva(ui.prostredi));
   }
   /* „Moje fotka“: vlastní snímek balkonu nebo schodiště jako pozadí – model se k němu natočí myší */
   function mojeFotka(el, poVyberu) {

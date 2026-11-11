@@ -26,6 +26,7 @@ Tok: panel voleb → config → jádro spočítá díly+cenu → `*-foto.js` vyr
 - Nehotovo: poptávka do firmy (jen `localStorage`), PDF nabídka, galerie, AR neověřeno na telefonu, ladění perspektivy vlastní fotky, zámky/drážky se nekreslí, motýlí podnož má ostré hrany, test na notebooku/telefonu. Detail: `foto/README.md`.
 - Zábradlí foto má od 2026-11-10 všechna nastavení starého konfigurátoru: úseky/zatočení/schodiště, „Podle stavby“, typy kotvení + do čeho + konce ke zdi + plotny + rozmístění kotev tažením, motiv Příroda po polích (každé pole jiný styl, varianty motýla, posun výřezu), profil/špruše/přesah, služby, kontrola. Kód: `foto/zabradli-dyn.js` (+ panel v `zabradli-foto.js`). Pushnuto 2026-11-10.
 - Jádra odpovídají produkci `main` po PR #60 (verze `20261110a`, nově i `ral.js`). Panely mají nové volby: zábradlí užití + hloubka pádu + umístění + RAL do konfigurace (`cfgVer` 2), umělecké „Pod nohy“, stolečky a umělecké RAL jako `fin: 'ral'`. Hotovo 2026-11-10.
+- Panel od 2026-11-11: sekce jdou srolovat klepnutím na nadpis (`sekce()` v `ui.js`, stav `ui.sbalene`, v nadpisu souhrn volby); Prostředí a Barva nejsou v panelu, ale jako tlačítka s okénkem u nadpisu scény (`rychle()`); zábradlí začíná sekcí Výplň a profil; pole Příroda jsou srolovaná, otevřené jen jedno (`ui.poleOt`). Pushnuto 2026-11-11.
 - Poslední větší změna: 2026-11-10 vydáno jako samostatný repo (původně složka `foto/` v produkci, větev `foto-vizual`).
 
 ## Paměť (Obsidian)

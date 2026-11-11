@@ -28,6 +28,29 @@ export function posuvnik(el, o, zmena) {
   inp.addEventListener('input', () => { out.textContent = nf(inp.value) + ' ' + (o.jednotka || 'mm'); zmena(Number(inp.value)); });
   return { set(v) { if (document.activeElement !== inp) inp.value = v; out.textContent = nf(v) + ' ' + (o.jednotka || 'mm'); } };
 }
+/* sekce panelu: [[i, 'Nadpis'], …] v pořadí zobrazení. Klepnutím na nadpis se sekce sroluje, stav drží ui.sbalene. */
+export function sekce(el, seznam, ui, o = {}) {
+  const sb = ui.sbalene = Object.assign({}, o.vychozi, ui.sbalene);
+  el.innerHTML = seznam.map(([i, t]) => '<section class="sekce' + (sb[i] ? ' sbalena' : '') + '" id="k' + i + '"><h2><button type="button" class="sbal" data-i="' + i + '" aria-expanded="' + !sb[i] + '" aria-controls="t' + i + '">' +
+    '<span class="nz">' + esc(t) + '</span><span class="souhrn" id="h' + i + '"></span></button></h2><div class="telo" id="t' + i + '"><div id="s' + i + '"></div><div id="x' + i + '"></div></div></section>').join('');
+  el.querySelectorAll('.sbal').forEach((b) => b.addEventListener('click', () => {
+    const i = b.dataset.i, z = !sb[i]; sb[i] = z; $('k' + i).classList.toggle('sbalena', z); b.setAttribute('aria-expanded', String(!z)); o.zmena && o.zmena(i, z);
+  }));
+}
+/* rychlé volby u nadpisu scény: tlačítko s okénkem; [{ id, lab, html }] → { popis(id, text, barva) } */
+export function rychle(el, polozky) {
+  el.innerHTML = polozky.map((p) => '<button type="button" class="tl rv" data-r="' + p.id + '" aria-expanded="false"><span class="tecka"></span><span class="rl">' + esc(p.lab) + '</span><b></b></button>').join('') +
+    polozky.map((p) => '<div class="vysuv" data-v="' + p.id + '" hidden><div class="vh"><strong>' + esc(p.lab) + '</strong><button type="button" class="zav" aria-label="Zavřít">×</button></div>' + p.html + '</div>').join('');
+  const tl = (id) => el.querySelector('[data-r="' + id + '"]'), ok = (id) => el.querySelector('[data-v="' + id + '"]');
+  const otevri = (id) => polozky.forEach((p) => { const z = p.id !== id; ok(p.id).hidden = z; tl(p.id).setAttribute('aria-expanded', String(!z)); });
+  polozky.forEach((p) => {
+    tl(p.id).addEventListener('click', () => otevri(ok(p.id).hidden ? p.id : null));
+    ok(p.id).querySelector('.zav').addEventListener('click', () => otevri(null));
+  });
+  document.addEventListener('pointerdown', (e) => { if (!el.contains(e.target)) otevri(null); }, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') otevri(null); });
+  return { popis(id, text, barva) { const b = tl(id); b.querySelector('b').textContent = text; if (barva) b.querySelector('.tecka').style.background = barva; } };
+}
 let hlaskaT = 0;
 export function hlaska(text, ms = 2600) {
   let el = document.querySelector('.hlaska'); if (!el) { el = document.createElement('div'); el.className = 'hlaska'; el.setAttribute('role', 'status'); document.body.appendChild(el); }

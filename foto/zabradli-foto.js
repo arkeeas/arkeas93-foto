@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { zaloz } from './render/stranka.js';
 import { hranol, plech, kruh, teleso, housenka, slouc, vHranolu, maticeGeo, V } from './render/geometrie.js';
-import { $, cipy, segment, posuvnik, nf, pamet, zOdkazu, ulozOdkaz, cenik } from './render/ui.js';
+import { $, cipy, segment, posuvnik, sekce, rychle, nf, pamet, zOdkazu, ulozOdkaz, cenik } from './render/ui.js';
 import { dynPanel } from './zabradli-dyn.js';
 
 const Zb = window.Zabradli, KOREN = new URL('../', import.meta.url).href, VERZE = '20261110a';
@@ -116,7 +116,11 @@ function start() {
 
   /* ---------- panel voleb ---------- */
   const volby = $('volby');
-  volby.innerHTML = ['Tvar a úseky', 'Rozměry', 'Výplň a profil', 'Motiv', 'Madlo a kotvení', 'Rozmístění kotev', 'Barva a povrch', 'Služby', 'Detaily', 'Prostředí', 'Kontrola zadání'].map((t, i) => '<section class="sekce" id="k' + i + '"><h2>' + t + '<span id="h' + i + '"></span></h2><div id="s' + i + '"></div><div id="x' + i + '"></div></section>').join('');
+  /* pořadí: nejdřív co to bude (výplň, profil, motiv), pak tvar a rozměry; čísla sekcí zůstávají kvůli zabradli-dyn.js.
+     Barva (6) a prostředí (9) nejsou v panelu, ale jako rychlé volby u nadpisu scény. */
+  sekce(volby, [[2, 'Výplň a profil'], [3, 'Motiv'], [0, 'Tvar a úseky'], [1, 'Rozměry'], [4, 'Madlo a kotvení'], [5, 'Rozmístění kotev'], [7, 'Služby'], [8, 'Detaily'], [10, 'Kontrola zadání']], ui,
+    { vychozi: { 4: true, 5: true, 7: true, 8: true }, zmena: (i, z) => { uloz(); if (!z && A) D.dyn(); } });
+  const R = rychle($('rychle'), [{ id: 'prostredi', lab: 'Prostředí', html: '<div id="s9"></div><div id="x9"></div>' }, { id: 'barva', lab: 'Barva', html: '<div id="s6"></div><div id="x6"></div>' }]);
   const nahledy = {}; let pos = {};
   const D = dynPanel({ Zb, ui, cfg: () => cfg, A: () => A, zmen: (...a) => zmen(...a), nahledMotivu: (id) => nahledMotivu(id) });
   const tvarId = () => { const s = JSON.stringify(cfg.segs.map((q) => [q.turn || 0, !!q.rise])); const p = Zb.PRESETS.find((q) => JSON.stringify(q.segs.map((w) => [w.turn || 0, !!w.rise])) === s); return p ? p.id : ''; };
@@ -155,7 +159,8 @@ function start() {
     segment($('umist'), Zb.UMISTENI.map((u) => ({ id: u.id, lab: u.lab })), cfg.umisteni, (id) => zmen({ umisteni: id }, true));
     $('s8').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
     $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary || ui.dilna; studio.invalidate(); uloz(); });
-    X.kresliProstredi($('s9'), ['zahrada', 'terasa', 'studio', 'teple']);
+    X.kresliProstredi($('s9'), ['zahrada', 'terasa', 'studio', 'teple'], (t, b) => R.popis('prostredi', t, b));
+    { const f = Zb.FIN.find((q) => q.id === cfg.fin) || {}, r = mat.RAL[ui.ral || 7016]; R.popis('barva', lak && r ? 'RAL ' + (ui.ral || 7016) + ' ' + r[0] : f.lab || '', lak && r ? r[1] : '#aab0b5'); }
     $('s5').innerHTML = '<div id="dKotvy"></div>'; $('s7').innerHTML = '<div id="dSluzby"></div>'; $('s10').innerHTML = '<div id="dKontrola"></div>';
     X.mojeFotka($('x9'), () => { stavba.visible = false; studio.invalidate(); });
     if (A) D.dyn();
@@ -177,7 +182,14 @@ function start() {
   function cena() {
     $('nazev').textContent = cfg.vypln === 'laser' ? (cfg.rada === 'priroda' ? 'Zábradlí Příroda' : 'Zábradlí s motivem') : 'Zábradlí se špruší';
     $('popis').textContent = nf(A.lenM, 1) + ' m · výška ' + nf(cfg.vyska) + ' mm · ' + nf(A.kg) + ' kg oceli';
-    $('h1').textContent = nf(A.lenM, 1) + ' m';
+    /* souhrn v nadpisu sekce – je vidět i po srolování */
+    const lm = (id) => (Zb.MOTIFS.find((m) => m.id === id) || { lab: 'Motýl' }).lab, pr = cfg.vypln === 'laser' && cfg.rada === 'priroda';
+    const mp = pr ? [...new Set(Zb.fieldsOf(cfg).slice(0, (A.lay.panels || []).length).map((f) => f.m))] : [cfg.motiv];
+    const tv = Zb.PRESETS.find((p) => p.id === tvarId()), kot = Zb.ANCHOR.find((q) => q.id === cfg.anchor), sl = Zb.SERVICES.filter((s) => cfg.services && cfg.services[s.id]).length, wn = (A.warns || []).length;
+    const sh = { 2: { A: 'Špruše se sloupky', B: 'Špruše bez sloupků', L: 'Motiv', P: 'Příroda', G: 'Geometrický' }[vypln()], 3: mp.length === 1 ? lm(mp[0]) : 'různé v polích', 0: tv ? tv.lab : 'Vlastní tvar',
+      1: nf(A.lenM, 1) + ' m · výška ' + nf(cfg.vyska) + ' mm', 4: (kot ? kot.lab : '') + (cfg.madlo ? ' · dřevěné madlo' : ''), 5: A.lay.anch && cfg.anchor !== 'bez' ? 'kotvy: ' + A.lay.anch.used.length : '',
+      7: sl ? 'vybráno ' + sl : 'bez služeb', 8: ui.svary ? 'svary viditelné' : 'svary zabroušené', 10: wn ? 'připomínek: ' + wn : 'v pořádku' };
+    Object.keys(sh).forEach((i) => { $('h' + i).textContent = sh[i] || ''; });
     $('cena').textContent = nf(A.total) + ' Kč';
     $('cenaPod').textContent = 'orientačně s DPH · ' + nf(Math.round(A.total / A.lenM / 10) * 10) + ' Kč / m · ' + nf(A.kg) + ' kg';
     /* výrobní pravda: co dílna nevyrobí, to se nesmí tvářit jako hotové */

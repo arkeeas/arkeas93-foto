@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { zaloz } from './render/stranka.js';
 import { hranol, plech, teleso, housenka, slouc, konceZTelesa, ramZTelesa, vTelese, V } from './render/geometrie.js';
-import { $, cipy, segment, posuvnik, nf, esc, pamet, zOdkazu, ulozOdkaz, cenik } from './render/ui.js';
+import { $, cipy, segment, posuvnik, sekce, rychle, nf, esc, pamet, zOdkazu, ulozOdkaz, cenik } from './render/ui.js';
 
 const K = window.Vyvoj, KOREN = new URL('../', import.meta.url).href;
 const sdil = zOdkazu();
@@ -87,7 +87,9 @@ function start() {
 
   /* ---------- panel voleb ---------- */
   const volby = $('volby');
-  volby.innerHTML = ['Model', 'Rozměry stolu', 'Provedení', 'Deska', 'Barva a povrch', 'Detaily', 'Prostředí'].map((t, i) => '<section class="sekce" id="k' + i + '"><h2>' + t + '<span id="h' + i + '"></span></h2><div id="s' + i + '"></div><div id="x' + i + '"></div></section>').join('');
+  /* barva (4) a prostředí (6) jsou rychlé volby u nadpisu scény */
+  sekce(volby, [[0, 'Model'], [1, 'Rozměry stolu'], [2, 'Provedení'], [3, 'Deska'], [5, 'Detaily']], ui, { zmena: uloz });
+  const R = rychle($('rychle'), [{ id: 'prostredi', lab: 'Prostředí', html: '<div id="s6"></div>' }, { id: 'barva', lab: 'Barva', html: '<div id="s4"></div><div id="x4"></div>' }]);
   const nahledy = {}; let pos = {};
   const info = (id) => K.MODELS.find((m) => m.id === id) || {};
   const vyber = (id, lab, polozky, akt) => '<label class="radek" for="' + id + '">' + lab + '</label><select class="vyber" id="' + id + '">' + polozky.map((p) => '<option value="' + esc(p.id) + '"' + (p.id === akt ? ' selected' : '') + '>' + esc(p.lab) + '</option>').join('') + '</select>';
@@ -127,7 +129,8 @@ function start() {
     cipy($('ral'), Object.keys(mat.RAL).filter((r) => ![9005, 7016, 9016].includes(Number(r))).map((r) => ({ id: r, lab: 'RAL ' + r, sub: mat.RAL[r][0], img: nahledy['ral:' + r] })), ui.ral && lak ? String(ui.ral) : '', (r) => { ui.ral = Number(r); zmen({ fin: 'ral', ralJiny: String(r) }, true); });
     $('s5').innerHTML = '<label class="radek">Viditelné svary<input type="checkbox" id="cSvary"' + (ui.svary ? ' checked' : '') + '></label><p class="pozn">Vypnuto = svary zabroušené do roviny.</p>';
     $('cSvary').addEventListener('change', (e) => { ui.svary = e.target.checked; const s = skupina.getObjectByName('svary'); if (s) s.visible = ui.svary; studio.invalidate(); uloz(); });
-    X.kresliProstredi($('s6'), ['studio', 'teple', 'zahrada', 'terasa']);
+    X.kresliProstredi($('s6'), ['studio', 'teple', 'zahrada', 'terasa'], (t, b) => R.popis('prostredi', t, b));
+    { const f = K.FIN.find((q) => q.id === cfg.fin) || {}, kod = ui.ral || (mat.POVRCHY[cfg.fin] || {}).ral, r = mat.RAL[kod]; R.popis('barva', ui.ral && lak && r ? 'RAL ' + kod + ' ' + r[0] : f.lab || '', lak && r ? r[1] : '#8d9093'); }
     X.kresliPohledy([{ id: 'celek', lab: 'Celek' }, { id: 'zepredu', lab: 'Zepředu' }, { id: 'zboku', lab: 'Zboku' }, { id: 'shora', lab: 'Shora' },
       { lab: 'Detail spoje', detail: () => ({ bod: [0, 0, A.build.dims.Hf * 0.5], smer: [-0.75, -1, 0.2], vzd: 420 }) },
       { lab: 'Detail patky', detail: () => { let p = [0, 0, 0], nej = -1; A.build.parts.forEach((q) => q.solid.verts.forEach((v) => { if (v[2] < 2 && v[0] - v[1] > nej) { nej = v[0] - v[1]; p = v; } })); return { bod: [p[0], p[1], 25], smer: [0.7, -1, 0.5], vzd: 330 }; } },

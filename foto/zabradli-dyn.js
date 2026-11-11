@@ -179,17 +179,22 @@ export function dynPanel(ctx) {
     const chip = (id, f) => { const m = mot(id), no = !!(f && f.slope) && m.schody === false; return { id, lab: m.lab, sub: no ? 'jen na rovinu' : '', img: ctx.nahledMotivu(id), dis: no && !(f && fl[pn.indexOf(f)].m === id) }; };
     const chipM = (akt) => ({ id: 'motyl', lab: 'Motýl', sub: 'varianta ' + (akt && jeMotyl(akt) ? 'ABC'[MOTYL.indexOf(akt)] : 'C'), img: ctx.nahledMotivu('motyl') });
     const varianty = (akt, pole) => '<div class="varianty" role="group" aria-label="Varianta motýla">' + MOTYL.map((id, i) => '<button type="button" data-var="' + id + '"' + (pole == null ? ' data-vse="1"' : ' data-pole="' + pole + '"') + ' aria-pressed="' + (akt === id) + '" title="Motýl ' + 'ABC'[i] + '">' + 'ABC'[i] + '</button>').join('') + '</div>';
+    if (ui.poleOt != null && ui.poleOt >= pn.length) ui.poleOt = null;
+    const ot = ui.poleOt;                                              // otevřené pole; ostatní jsou srolovaná na jeden řádek
     el.innerHTML = '<p class="pozn" style="margin:0 0 6px">Stejný motiv do všech polí</p><div id="prAll"></div><div id="prAllV"></div>' +
-      '<p class="pozn" style="margin:14px 0 4px">Motiv v jednotlivých polích – u každého okna jiný styl</p><p class="pozn" style="margin:0 0 8px">Posuvníkem posunete, která část scény bude v poli vidět. Hlavní zvíře zůstane vždy celé.</p>' +
-      pn.map((f, i) => '<div class="pole-box"><div class="pole-h"><strong>Pole ' + f.field + '</strong><span>' + (f.slope ? 'schodiště ' + nf(f.slope, 1) + '° · ' : '') + 'plech ' + nf(f.w) + ' × ' + nf(f.h) + ' mm</span></div><div id="pm' + i + '"></div><div id="pv' + i + '"></div>' +
+      '<p class="pozn" style="margin:14px 0 4px">Motiv v jednotlivých polích – u každého okna jiný styl</p><p class="pozn" style="margin:0 0 8px">Klepnutím pole rozbalíte. Posuvníkem posunete, která část scény bude v poli vidět. Hlavní zvíře zůstane vždy celé.</p>' +
+      pn.map((f, i) => '<div class="pole-box' + (ot === i ? '' : ' sbalene') + '"><button type="button" class="pole-h" data-po="' + i + '" aria-expanded="' + (ot === i) + '"><strong>Pole ' + f.field + ' · ' + esc(jeMotyl(fl[i].m) ? 'Motýl ' + 'ABC'[MOTYL.indexOf(fl[i].m)] : mot(fl[i].m).lab || '') + '</strong><span>' + (f.slope ? 'schodiště ' + nf(f.slope, 1) + '° · ' : '') + 'plech ' + nf(f.w) + ' × ' + nf(f.h) + ' mm</span></button>' +
+        (ot !== i ? '' : '<div id="pm' + i + '"></div><div id="pv' + i + '"></div>' +
         '<canvas class="nahled-pole" data-cv="' + i + '" aria-label="Náhled výřezu scény v poli ' + f.field + '"></canvas>' +
-        (f.ok && f.crop && f.crop.n > 1 ? '<input type="range" data-pp="' + i + '" min="0" max="1000" step="1" value="' + Math.round(fl[i].p * 1000) + '" aria-label="Posun výřezu v poli ' + f.field + '" style="width:100%">' : f.ok ? '<p class="pozn" style="margin:4px 0 0">Poloha je daná – hlavní zvíře se do pole vejde jen takhle.</p>' : '') +
+        (f.ok && f.crop && f.crop.n > 1 ? '<input type="range" data-pp="' + i + '" min="0" max="1000" step="1" value="' + Math.round(fl[i].p * 1000) + '" aria-label="Posun výřezu v poli ' + f.field + '" style="width:100%">' : f.ok ? '<p class="pozn" style="margin:4px 0 0">Poloha je daná – hlavní zvíře se do pole vejde jen takhle.</p>' : '')) +
         (!f.ok ? '<p class="pozn chyba">' + esc((f.steep ? WHY.steep : WHY[f.why]) || 'Pole nejde osadit.') + '</p>' : '') + '</div>').join('');
     const nastavVse = (id) => zmen({ motiv: id, pole: pn.map(() => ({ m: id, p: 0.5 })) }, true);
     cipy($('prAll'), [...ids.map((id) => chip(id)), chipM(used.length === 1 ? used[0] : null)], used.length === 1 ? (jeMotyl(used[0]) ? 'motyl' : used[0]) : '', (id) => nastavVse(id === 'motyl' ? 'motyl' : id));
     $('prAllV').innerHTML = varianty(used.length === 1 && jeMotyl(used[0]) ? used[0] : null, null);
     const setPole = (i, ch) => { const np = Zb.fieldsOf(cfg()).slice(0, pn.length).map((x) => Object.assign({}, x)); Object.assign(np[i], ch); zmen({ pole: np }, true); };
+    el.querySelectorAll('[data-po]').forEach((b) => b.addEventListener('click', () => { const i = Number(b.dataset.po); ui.poleOt = ui.poleOt === i ? null : i; pole(); }));
     pn.forEach((f, i) => {
+      if (i !== ot) return;
       cipy($('pm' + i), [...ids.map((id) => chip(id, f)), chipM(fl[i].m)], jeMotyl(fl[i].m) ? 'motyl' : fl[i].m, (id) => setPole(i, { m: id, p: 0.5 }));
       $('pv' + i).innerHTML = varianty(jeMotyl(fl[i].m) ? fl[i].m : null, i);
       kresliPole(el.querySelector('[data-cv="' + i + '"]'), fl[i].m, f, fl[i].p);
